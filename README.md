@@ -93,6 +93,13 @@ This should be very familiar by now; from the geowave root directory:
 
 This distributable needs to be in the Accumulo classpath on every tablet server.  Accumulo (in 1.5) leverages the Apache VFSClassloader to provide an easy way to do this in one shot - load dependencies out of HDFS.  Unfortunately we have a current bug (**GEOWAVE-28**) where the hdfs URI breaks some SPI injection fixes we have in place.  So until this is addressed you need to distribute this jar (*geowave-gt-0.7.0-accumulo-singlejar.jar*) to each tabled server, on the accumulo classpath ( $ACCUMULO_HOME/lib/ext/  is the default choice ).  
 
+### GeoWave System Integration Test
+
+This module will run end-to-end integration testing on either a configured Accumulo instance or a temporary MiniAccumuloCluster.  It will ingest both point and line features spatially and temporally from shapefiles and test that spatial and spatial-temporal queries match expected results.
+
+A specific Accumulo instance can be configured either directly within this pom.xml or as Java options -DzookeeperUrl=&lt;zookeeperUrl&gt; -Dinstance=&lt;instance&gt; -Dusername=&lt;username&gt; -Dpassword=&lt;password&gt;
+
+If any of these configuration parameters are left unspecified the default integration test will use a MiniAccumuloCluster created within a temporary directory.  For this to work on Windows, make sure Cygwin is installed and a "CYGPATH" environment variable must reference the &lt;CYGWIN_HOME&gt;/bin/cygpath.exe file.  
 
 ### Ingest Data
 
