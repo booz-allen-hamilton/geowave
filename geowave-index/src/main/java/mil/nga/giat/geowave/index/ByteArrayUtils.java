@@ -110,6 +110,7 @@ public class ByteArrayUtils
 		}
 		return value[0] != 0;
 	}
+	
 
 	/**
 	 * Converts a UUID to a byte array
