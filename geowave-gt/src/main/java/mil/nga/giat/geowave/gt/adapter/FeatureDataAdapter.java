@@ -113,16 +113,18 @@ public class FeatureDataAdapter extends
 			reprojectedType = SimpleFeatureTypeBuilder.retype(
 					type,
 					GeoWaveGTDataStore.DEFAULT_CRS);
-			try {
-				transform = CRS.findMathTransform(
-						type.getCoordinateReferenceSystem(),
-						GeoWaveGTDataStore.DEFAULT_CRS,
-						true);
-			}
-			catch (final FactoryException e) {
-				LOGGER.warn(
-						"Unable to create coordinate reference system transform",
-						e);
+			if (type.getCoordinateReferenceSystem() != null) {
+				try {
+					transform = CRS.findMathTransform(
+							type.getCoordinateReferenceSystem(),
+							GeoWaveGTDataStore.DEFAULT_CRS,
+							true);
+				}
+				catch (final FactoryException e) {
+					LOGGER.warn(
+							"Unable to create coordinate reference system transform",
+							e);
+				}
 			}
 		}
 		else {
@@ -333,15 +335,16 @@ public class FeatureDataAdapter extends
 		// EPSG:4326, transform the geometry
 		final CoordinateReferenceSystem crs = entry.getFeatureType().getCoordinateReferenceSystem();
 		SimpleFeature defaultCRSEntry = entry;
+
 		if (!GeoWaveGTDataStore.DEFAULT_CRS.equals(crs)) {
 			MathTransform featureTransform = null;
-			if (persistedType.getCoordinateReferenceSystem().equals(
+			if ((persistedType.getCoordinateReferenceSystem() != null) && persistedType.getCoordinateReferenceSystem().equals(
 					crs) && (transform != null)) {
 				// we can use the transform we have already calculated for this
 				// feature
 				featureTransform = transform;
 			}
-			else {
+			else if (crs != null) {
 				// this feature differs from the persisted type in CRS,
 				// calculate the transform
 				try {
@@ -356,10 +359,10 @@ public class FeatureDataAdapter extends
 							e);
 				}
 			}
-			try {
-				// what should we do besides log a message when an entry
-				// can't be transformed to EPSG:4326 for some reason?
-				if (featureTransform != null) {
+			if (featureTransform != null) {
+				try {
+					// what should we do besides log a message when an entry
+					// can't be transformed to EPSG:4326 for some reason?
 					// this will clone the feature and retype it to EPSG:4326
 					defaultCRSEntry = SimpleFeatureBuilder.retype(
 							entry,
@@ -369,11 +372,11 @@ public class FeatureDataAdapter extends
 							(Geometry) entry.getDefaultGeometry(),
 							featureTransform));
 				}
-			}
-			catch (MismatchedDimensionException | TransformException e) {
-				LOGGER.warn(
-						"Unable to perform transform to EPSG:4326, the feature geometry will remain in its original CRS",
-						e);
+				catch (MismatchedDimensionException | TransformException e) {
+					LOGGER.warn(
+							"Unable to perform transform to EPSG:4326, the feature geometry will remain in its original CRS",
+							e);
+				}
 			}
 		}
 
